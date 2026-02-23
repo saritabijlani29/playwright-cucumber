@@ -5,7 +5,7 @@
 - [ ] Only locator updated
 - [ ] No XPath introduced
 - [ ] Business logic unchanged
-- [ ] Assertions unchanged
+- [ ] Assertions unchanged 
 - [ ] No hard waits added
 - [ ] CI passed
 - [ ] Do not modify .feature files

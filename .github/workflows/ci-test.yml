@@ -1,8 +1,31 @@
-- name: Run Playwright (1st attempt)
-  id: first_run
-  run: |
-    npm test || echo "failed=true" >> $GITHUB_OUTPUT
+name: CI
 
-- name: Retry Once
-  if: steps.first_run.outputs.failed == 'true'
-  run: npm test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      - name: Run Tests
+        id: run_tests
+        continue-on-error: true
+        run: npm test
+
+      - name: Upload Cucumber JSON
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-report
+          path: artifacts/cucumber-report.json

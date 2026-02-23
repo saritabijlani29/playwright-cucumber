@@ -4,7 +4,8 @@
   "scripts": {
     "test": "cucumber-js --config cucumber.config.js --format json:artifacts/cucumber-report.json",
     "allure:generate": "allure generate ./allure-results --clean",
-    "allure:open": "allure open"
+    "allure:open": "allure open",
+    "generate-heal-context": "ts-node ai-observer/context-generator.ts"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^9.6.0",

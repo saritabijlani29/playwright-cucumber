@@ -1,8 +1,8 @@
-name: Create Heal PR
+name: AI Healer
 
 on:
   workflow_run:
-    workflows: ["CI Test"]
+    workflows: ["CI"]
     types:
       - completed
 
@@ -14,12 +14,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: npm ci
-      - run: node packages/ai-observer/dist/index.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-      - name: Create PR
+      - run: npm install
+
+      - name: Download cucumber report
+        uses: actions/download-artifact@v4
+        with:
+          name: cucumber-report
+
+      - name: Run AI Observer
+        run: npx ts-node ai-observer/context-generator.ts
+
+      - name: Create Heal PR
         uses: peter-evans/create-pull-request@v6
         with:
-          branch: auto-heal/${{ github.run_id }}
-          title: "🔧 Copilot Assisted Locator Fix"
-          body-path: artifacts/heal-context.md
+          branch: ai-heal-${{ github.run_id }}
+          title: "🤖 AI Locator Heal"
+          commit-message: "AI healed locator"
