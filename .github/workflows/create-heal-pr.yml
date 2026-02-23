@@ -24,6 +24,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: cucumber-report
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run AI Observer
         run: npx ts-node ai-observer/context-generator.ts
