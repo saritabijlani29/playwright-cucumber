@@ -1,14 +1,6 @@
-import { Given, When, Then, Before, After } from '@cucumber/cucumber';
+import { Given, When, Then } from '@cucumber/cucumber';
 import { HomePage } from '../../pages/HomePage';
 import { CartPage } from '../../pages/CartPage';
-
-Before(async function () {
-  await this.init();
-});
-
-After(async function () {
-  await this.close();
-});
 
 Given('user is on home page', async function () {
   this.homePage = new HomePage(this.page);

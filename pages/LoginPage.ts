@@ -19,6 +19,6 @@ export class LoginPage {
   }
 
   async verifyLoginFailure() {
-    await expect(this.page.locator('.login-form p')).toBeVisible();
+    await expect(this.page.locator('.login-form1s p')).toBeVisible();
   }
 }

@@ -5,14 +5,18 @@ Before(async function () {
 });
 
 After(async function (scenario: ITestCaseHookParameter) {
-  await this.close();
+  try {
+    if (scenario.result?.status === 'FAILED' && this.page) {
+      const screenshot = await this.page.screenshot({
+        encoding: 'base64',
+        fullPage: true
+      });
 
-  if (scenario.result?.status === 'FAILED') {
-    const screenshot = await this.page.screenshot({
-      encoding: 'base64',
-      fullPage: true
-    });
-
-    await this.attach(screenshot, 'image/png');
+      await this.attach(screenshot, 'image/png');
+    }
+  } catch (error) {
+    console.error("Screenshot failed:", error);
   }
+
+  await this.close();
 });
