@@ -32,3 +32,7 @@ jobs:
         with:
           name: cucumber-report
           path: artifacts/cucumber-report.json
+          
+      - name: Fail Workflow If Tests Failed
+        if: steps.run_tests.outcome == 'failure'
+        run: exit 1
