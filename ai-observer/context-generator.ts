@@ -8,15 +8,71 @@ interface FailureInfo {
   file: string;
   line: number;
   error: string;
+  classification: string;
 }
 
-function isLocatorFailure(error: string): boolean {
-  return (
-    error.includes("locator(") ||
-    error.includes("getByRole") ||
-    error.includes("getByText") ||
-    error.includes("waiting for locator")
-  );
+/**
+ * ENTERPRISE FAILURE CLASSIFIER
+ */
+function classifyFailure(error: string): {
+  healable: boolean;
+  type: string;
+} {
+  const e = error.toLowerCase();
+
+  // 🚫 Infra / Environment failures (DO NOT HEAL)
+  if (
+    e.includes("browsertype.launch") ||
+    e.includes("executable doesn't exist") ||
+    e.includes("net::err") ||
+    e.includes("navigation failed") ||
+    e.includes("process completed with exit code")
+  ) {
+    return { healable: false, type: "INFRASTRUCTURE" };
+  }
+
+  // 🔥 Strict mode violations
+  if (e.includes("strict mode violation")) {
+    return { healable: true, type: "STRICT_MODE" };
+  }
+
+  // 🔥 Locator waiting failures
+  if (
+    e.includes("waiting for locator") ||
+    e.includes("locator(") ||
+    e.includes("getbyrole") ||
+    e.includes("getbytext") ||
+    e.includes("getbylabel") ||
+    e.includes("getbytestid")
+  ) {
+    return { healable: true, type: "LOCATOR_NOT_FOUND" };
+  }
+
+  // 🔥 Assertion failures on UI
+  if (
+    e.includes("tobevisible") ||
+    e.includes("tohavetext") ||
+    e.includes("tohavevalue") ||
+    e.includes("not to be visible")
+  ) {
+    return { healable: true, type: "ASSERTION_VISIBILITY" };
+  }
+
+  // 🔥 DOM state issues
+  if (
+    e.includes("element is not attached") ||
+    e.includes("element is not visible")
+  ) {
+    return { healable: true, type: "DOM_STATE" };
+  }
+
+  // 🔥 Cucumber step timeout (very important case)
+  if (e.includes("function timed out")) {
+    return { healable: true, type: "STEP_TIMEOUT_POSSIBLE_LOCATOR" };
+  }
+
+  // Default: not healable
+  return { healable: false, type: "UNKNOWN" };
 }
 
 function parseCucumberJson(): FailureInfo | null {
@@ -37,9 +93,12 @@ function parseCucumberJson(): FailureInfo | null {
 
           const error = step.result.error_message || "";
 
-          // 🔴 ENTERPRISE RULE: Skip non-locator failures
-          if (!isLocatorFailure(error)) {
-            console.log("Failure is NOT locator-based. Skipping healing.");
+          const classification = classifyFailure(error);
+
+          if (!classification.healable) {
+            console.log(
+              `Failure classified as ${classification.type}. Skipping healing.`
+            );
             return null;
           }
 
@@ -52,7 +111,8 @@ function parseCucumberJson(): FailureInfo | null {
             step: step.name,
             file: match ? match[1].replace(/\\/g, "/") : "Unknown",
             line: match ? Number(match[2]) : 0,
-            error
+            error,
+            classification: classification.type
           };
         }
       }
@@ -81,6 +141,7 @@ function generateContext() {
 - Branch: ${branch}
 - Run ID: ${runId}
 - Timestamp: ${timestamp}
+- Classification: ${failure.classification}
 
 ---
 
@@ -112,6 +173,8 @@ ${failure.error}
 
 You are fixing a Playwright + Cucumber (BDD) framework.
 
+This failure is classified as: ${failure.classification}
+
 STRICT RULES:
 
 1. ONLY update locator in Page Object.
@@ -131,9 +194,11 @@ STRICT RULES:
    - getByTestId()
    - locator() fallback
 5. Maintain existing method signature.
+6. If strict mode violation → make locator more specific.
+7. If timeout → improve locator accuracy, NOT timeout value.
 
 Modify file only inside:
-tests/pages/
+pages/
 
 Return updated TypeScript code only.
 
@@ -144,6 +209,7 @@ Return updated TypeScript code only.
 - [ ] Only locator updated
 - [ ] No XPath
 - [ ] No hard waits
+- [ ] No timeout increase
 - [ ] No logic change
 - [ ] CI passes
 
@@ -153,7 +219,7 @@ Return updated TypeScript code only.
 
 Run:
 
-npm run test:ci
+npm test
 `;
 
   const outputPath = path.resolve("artifacts/heal-context.md");
