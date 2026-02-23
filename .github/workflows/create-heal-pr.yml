@@ -1,0 +1,25 @@
+name: Create Heal PR
+
+on:
+  workflow_run:
+    workflows: ["CI Test"]
+    types:
+      - completed
+
+jobs:
+  heal:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: npm ci
+      - run: node packages/ai-observer/dist/index.js
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: auto-heal/${{ github.run_id }}
+          title: "🔧 Copilot Assisted Locator Fix"
+          body-path: artifacts/heal-context.md

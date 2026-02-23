@@ -1,0 +1,8 @@
+- name: Run Playwright (1st attempt)
+  id: first_run
+  run: |
+    npm test || echo "failed=true" >> $GITHUB_OUTPUT
+
+- name: Retry Once
+  if: steps.first_run.outputs.failed == 'true'
+  run: npm test

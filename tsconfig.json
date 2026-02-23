@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "types": [
+      "node",
+      "@cucumber/cucumber"
+    ]
+  },
+  "include": [
+    "tests/**/*.ts",
+    "pages/**/*.ts"
+  ]
+}
