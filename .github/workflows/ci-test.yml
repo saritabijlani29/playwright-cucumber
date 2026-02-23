@@ -18,6 +18,9 @@ jobs:
 
       - run: npm install
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
       - name: Run Tests
         id: run_tests
         continue-on-error: true
