@@ -3,14 +3,14 @@
   "files": [
     {
       "pageObjectFile": "/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts",
-      "pageObjectContent": "import { expect, Page } from '@playwright/test';\n\nexport class LoginPage {\n  constructor(private page: Page) { }\n\n  async navigate() {\n    await this.page.goto('/login');\n  }\n\n  async login(email: string, password: string) {\n    await this.page.fill('input[data-qa=\"login-email\"]', email);\n    await this.page.fill('input[data-qa=\"login-password\"]', password);\n    await this.page.click('button[data-qa=\"login-button\"]');\n  }\n\n  async verifyLoginSuccess() {\n    await this.page.locator('a[href=\"/logout1\"]').waitFor({ state: 'visible' });\n    await expect(this.page.locator('a[href=\"/logout\"]')).toBeVisible();\n  }\n\n  async verifyLoginFailure() {\n    await expect(this.page.locator('.login-form1 p')).toBeVisible();\n  }\n}\n",
+      "pageObjectContent": "import { expect, Page } from '@playwright/test';\n\nexport class LoginPage {\n  constructor(private page: Page) { }\n\n  async navigate() {\n    await this.page.goto('/login');\n  }\n\n  async login(email: string, password: string) {\n    await this.page.fill('input[data-qa=\"2444login-email\"]', email);\n    await this.page.fill('input[data-qa=\"login-password\"]', password);\n    await this.page.click('button[data-qa=\"login-button\"]');\n  }\n\n  async verifyLoginSuccess() {\n    await this.page.locator('a[href=\"/logou1t\"]').waitFor({ state: 'visible' });\n    await expect(this.page.locator('a[href=\"/logou1t\"]')).toBeVisible();\n  }\n\n  async verifyLoginFailure() {\n    await expect(this.page.locator('.login-form1 p')).toBeVisible();\n  }\n}\n",
       "brokenLocators": [
-        "a[href=\"/logout1\"]",
-        ".login-form1 p"
+        "input[data-qa=\"2444login-email\"]",
+        "input[data-qa=\"2444login-email\"]"
       ],
       "errors": [
-        "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('a[href=\"/logout1\"]') to be visible\n\n    at LoginPage.verifyLoginSuccess (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:17:51)\n    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:18:24)",
-        "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.login-form1 p')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 5000ms\n  - waiting for locator('.login-form1 p')\n\n    at Proxy.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/node_modules/playwright/lib/matchers/expect.js:213:24)\n    at LoginPage.verifyLoginFailure (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:22:55)\n    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:22:24)"
+        "page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('input[data-qa=\"2444login-email\"]')\n\n    at LoginPage.login (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:11:21)\n    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:10:24)",
+        "page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('input[data-qa=\"2444login-email\"]')\n\n    at LoginPage.login (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:11:21)\n    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:14:24)"
       ]
     }
   ],
@@ -18,20 +18,20 @@
     {
       "feature": "Login functionality",
       "scenario": "Successful login",
-      "step": "login should be successful",
+      "step": "user logs in with valid credentials",
       "pageObjectFile": "/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts",
-      "brokenLocator": "a[href=\"/logout1\"]",
+      "brokenLocator": "input[data-qa=\"2444login-email\"]",
       "classification": "LOCATOR_NOT_FOUND",
-      "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('a[href=\"/logout1\"]') to be visible\n\n    at LoginPage.verifyLoginSuccess (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:17:51)\n    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:18:24)"
+      "error": "page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('input[data-qa=\"2444login-email\"]')\n\n    at LoginPage.login (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:11:21)\n    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:10:24)"
     },
     {
       "feature": "Login functionality",
       "scenario": "Invalid login",
-      "step": "login should fail",
+      "step": "user logs in with invalid credentials",
       "pageObjectFile": "/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts",
-      "brokenLocator": ".login-form1 p",
+      "brokenLocator": "input[data-qa=\"2444login-email\"]",
       "classification": "LOCATOR_NOT_FOUND",
-      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.login-form1 p')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 5000ms\n  - waiting for locator('.login-form1 p')\n\n    at Proxy.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/node_modules/playwright/lib/matchers/expect.js:213:24)\n    at LoginPage.verifyLoginFailure (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:22:55)\n    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:22:24)"
+      "error": "page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('input[data-qa=\"2444login-email\"]')\n\n    at LoginPage.login (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:11:21)\n    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:14:24)"
     }
   ]
 }
