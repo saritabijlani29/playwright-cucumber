@@ -2,8 +2,8 @@
 
 ## Metadata
 - Branch: main
-- Run ID: 22339865136
-- Timestamp: 2026-02-24T06:47:05.723Z
+- Run ID: 22340265133
+- Timestamp: 2026-02-24T07:03:08.060Z
 - Classification: LOCATOR_NOT_FOUND
 
 ---
@@ -11,34 +11,26 @@
 ## Failing Test
 
 Feature: Login functionality
-Scenario: Invalid login
+Scenario: Successful login
 
-Step: login should fail
+Step: login should be successful
 Step Definition File: tests/step-definitions/login.steps.ts
-Step Definition Line: 21
+Step Definition Line: 17
 
 Page Object File: /home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts
-Broken Locator: .login-form1 p
+Broken Locator: a[href="/logout1"]
 
 ---
 
 ## Error Stack
 
 ```
-Error: expect(locator).toBeVisible() failed
-
-Locator: locator('.login-form1 p')
-Expected: visible
-Timeout: 5000ms
-Error: element(s) not found
-
+locator.waitFor: Timeout 30000ms exceeded.
 Call log:
-  - Expect "to.be.visible" with timeout 5000ms
-  - waiting for locator('.login-form1 p')
+  - waiting for locator('a[href="/logout1"]') to be visible
 
-    at Proxy.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/node_modules/playwright/lib/matchers/expect.js:213:24)
-    at LoginPage.verifyLoginFailure (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:22:55)
-    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:22:24)
+    at LoginPage.verifyLoginSuccess (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:17:51)
+    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:18:24)
 ```
 
 ---
@@ -62,7 +54,7 @@ export class LoginPage {
   }
 
   async verifyLoginSuccess() {
-    await this.page.locator('a[href="/logout"]').waitFor({ state: 'visible' });
+    await this.page.locator('a[href="/logout1"]').waitFor({ state: 'visible' });
     await expect(this.page.locator('a[href="/logout"]')).toBeVisible();
   }
 
@@ -70,6 +62,7 @@ export class LoginPage {
     await expect(this.page.locator('.login-form1 p')).toBeVisible();
   }
 }
+
 ```
 
 ---
@@ -79,7 +72,7 @@ export class LoginPage {
 You are fixing a Playwright + Cucumber (BDD) framework.
 
 This failure is classified as: LOCATOR_NOT_FOUND
-The broken locator is: .login-form1 p
+The broken locator is: a[href="/logout1"]
 The page object file is: /home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts
 
 STRICT RULES:

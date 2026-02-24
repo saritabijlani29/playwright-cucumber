@@ -14,7 +14,7 @@ export class LoginPage {
   }
 
   async verifyLoginSuccess() {
-    await this.page.locator('a[href="/logout1"]').waitFor({ state: 'visible' });
+    await this.page.locator('a[href="/logout"]').waitFor({ state: 'visible' });
     await expect(this.page.locator('a[href="/logout"]')).toBeVisible();
   }
 
