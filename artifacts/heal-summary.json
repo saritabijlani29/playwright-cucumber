@@ -1,0 +1,17 @@
+{
+  "totalFailures": 2,
+  "filesProcessed": 1,
+  "filesHealed": 1,
+  "filesFailed": 0,
+  "results": [
+    {
+      "file": "/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts",
+      "locators": [
+        "a[href=\"/logout1\"]",
+        ".login-form1 p"
+      ],
+      "success": true
+    }
+  ],
+  "timestamp": "2026-02-24T07:24:43.162Z"
+}

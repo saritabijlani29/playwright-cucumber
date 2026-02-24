@@ -14,11 +14,11 @@ export class LoginPage {
   }
 
   async verifyLoginSuccess() {
-    await this.page.locator('a[href="/logout1"]').waitFor({ state: 'visible' });
+    await this.page.locator('a[href="/logout"]').waitFor({ state: 'visible' });
     await expect(this.page.locator('a[href="/logout"]')).toBeVisible();
   }
 
   async verifyLoginFailure() {
-    await expect(this.page.locator('.login-form1 p')).toBeVisible();
+    await expect(this.page.locator('.login-form p')).toBeVisible();
   }
 }
