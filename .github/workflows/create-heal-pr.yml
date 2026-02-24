@@ -59,7 +59,7 @@ jobs:
       - name: Run Copilot Healer
         if: steps.check_heal.outputs.heal_needed == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_MODELS_TOKEN: ${{ secrets.GH_MODELS_TOKEN }}
         run: npx ts-node ai-observer/copilot-healer.ts
 
       - name: Verify file was changed

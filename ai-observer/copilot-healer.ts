@@ -37,9 +37,10 @@ async function healWithCopilot() {
     process.exit(0);
   }
 
-  const token = process.env.GITHUB_TOKEN;
+  const token = process.env.GH_MODELS_TOKEN;
   if (!token) {
-    console.error("GITHUB_TOKEN is not set. Cannot call Copilot API.");
+    console.error("GH_MODELS_TOKEN is not set. Add it as a repository secret.");
+    console.error("Go to: https://github.com/<owner>/<repo>/settings/secrets/actions");
     process.exit(1);
   }
 
@@ -78,14 +79,14 @@ The website is https://automationexercise.com.
 Return ONLY raw TypeScript code, no markdown fences or explanations.`;
 
   try {
+    // Use GitHub Models API (requires GH_MODELS_TOKEN PAT)
     const response = await fetch(
-      "https://api.githubcopilot.com/chat/completions",
+      "https://models.github.ai/inference/chat/completions",
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
-          "Copilot-Integration-Id": "vscode-chat",
         },
         body: JSON.stringify({
           messages: [
@@ -101,19 +102,15 @@ Return ONLY raw TypeScript code, no markdown fences or explanations.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Copilot API error (${response.status}): ${errorText}`);
-
-      // Fallback: try models API endpoint
-      console.log("Trying GitHub Models API fallback...");
-      await healWithModelsAPI(healData, token);
-      return;
+      console.error(`GitHub Models API error (${response.status}): ${errorText}`);
+      process.exit(1);
     }
 
     const data = await response.json();
     let fixedCode = data.choices?.[0]?.message?.content;
 
     if (!fixedCode) {
-      console.error("No response from Copilot API.");
+      console.error("No response from GitHub Models API.");
       process.exit(1);
     }
 
@@ -138,80 +135,9 @@ Return ONLY raw TypeScript code, no markdown fences or explanations.`;
       JSON.stringify(summary, null, 2)
     );
   } catch (error) {
-    console.error("Error calling Copilot API:", error);
+    console.error("Error calling GitHub Models API:", error);
     process.exit(1);
   }
-}
-
-/**
- * Fallback: Use GitHub Models API (api.github.com/models)
- */
-async function healWithModelsAPI(healData: HealData, token: string) {
-  const systemPrompt = `You are an expert Playwright test automation engineer fixing broken CSS selectors in Page Object files.
-Rules: Only fix the broken locator. Return ONLY the complete updated TypeScript file. No markdown, no explanations.`;
-
-  const userPrompt = `Fix the broken locator "${healData.brokenLocator}" in this Playwright Page Object file.
-The website is https://automationexercise.com.
-
-ERROR: ${healData.error}
-
-CURRENT FILE (${healData.pageObjectFile}):
-${healData.pageObjectContent}
-
-Return ONLY raw TypeScript code.`;
-
-  const response = await fetch(
-    "https://models.github.ai/inference/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        model: "openai/gpt-4o",
-        temperature: 0,
-        max_tokens: 2000,
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Models API error (${response.status}): ${errorText}`);
-    process.exit(1);
-  }
-
-  const data = await response.json();
-  let fixedCode = data.choices?.[0]?.message?.content;
-
-  if (!fixedCode) {
-    console.error("No response from Models API.");
-    process.exit(1);
-  }
-
-  fixedCode = cleanCodeResponse(fixedCode);
-
-  const filePath = path.resolve(healData.pageObjectFile);
-  fs.writeFileSync(filePath, fixedCode, "utf8");
-  console.log(`Successfully healed (via Models API): ${healData.pageObjectFile}`);
-
-  const summary = {
-    healed: true,
-    file: healData.pageObjectFile,
-    brokenLocator: healData.brokenLocator,
-    classification: healData.classification,
-    api: "github-models",
-    timestamp: new Date().toISOString(),
-  };
-  fs.writeFileSync(
-    path.resolve("artifacts/heal-summary.json"),
-    JSON.stringify(summary, null, 2)
-  );
 }
 
 /**
