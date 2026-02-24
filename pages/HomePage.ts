@@ -8,11 +8,11 @@ export class HomePage {
   }
 
   async addFirstProductToCart() {
-    await this.page.locator('.product').first().hover();
-    await this.page.locator('//div[@class="overlay-content"]/a[text()="Add to cart"]').first().click();
+    await this.page.locator('.product-image-wrapper').first().hover();
+    await this.page.locator('.overlay-content a[href*="add_to_cart"]').first().click();
   }
 
   async goToCart() {
-    await this.page.click('//u[text()="View Cart"]');
+    await this.page.click('u:has-text("View Cart")');
   }
 }
