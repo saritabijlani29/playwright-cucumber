@@ -128,9 +128,9 @@ function parseCucumberJson(): FailureInfo | null {
 
           if (!classification.healable) {
             console.log(
-              `Failure classified as ${classification.type}. Skipping healing.`
+              `Failure classified as ${classification.type}. Skipping this step.`
             );
-            return null;
+            continue;
           }
 
           const location = step.match?.location || "";

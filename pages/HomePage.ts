@@ -9,10 +9,10 @@ export class HomePage {
 
   async addFirstProductToCart() {
     await this.page.locator('.product-image-wrapper').first().hover();
-    await this.page.locator('//div[@class="overlay-content"]/a[text()="Add to cart"]').first().click();
+    await this.page.locator('.overlay-content a').filter({ hasText: 'Add to cart' }).first().click();
   }
 
   async goToCart() {
-    await this.page.click('//u[text()="View Cart"]');
+    await this.page.locator('u').filter({ hasText: 'View Cart' }).click();
   }
 }
