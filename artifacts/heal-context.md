@@ -2,8 +2,8 @@
 
 ## Metadata
 - Branch: main
-- Run ID: 22340839204
-- Timestamp: 2026-02-24T07:24:39.501Z
+- Run ID: 22341375734
+- Timestamp: 2026-02-24T07:44:13.399Z
 - Total Failures: 2
 
 ---
@@ -13,23 +13,23 @@
 Feature: Login functionality
 Scenario: Successful login
 
-Step: login should be successful
+Step: user logs in with valid credentials
 Step Definition File: tests/step-definitions/login.steps.ts
-Step Definition Line: 17
+Step Definition Line: 9
 
 Page Object File: /home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts
-Broken Locator: a[href="/logout1"]
+Broken Locator: input[data-qa="2444login-email"]
 Classification: LOCATOR_NOT_FOUND
 
 ### Error Stack
 
 ```
-locator.waitFor: Timeout 30000ms exceeded.
+page.fill: Timeout 30000ms exceeded.
 Call log:
-  - waiting for locator('a[href="/logout1"]') to be visible
+  - waiting for locator('input[data-qa="2444login-email"]')
 
-    at LoginPage.verifyLoginSuccess (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:17:51)
-    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:18:24)
+    at LoginPage.login (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:11:21)
+    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:10:24)
 ```
 
 ### Current Page Object Code
@@ -45,14 +45,14 @@ export class LoginPage {
   }
 
   async login(email: string, password: string) {
-    await this.page.fill('input[data-qa="login-email"]', email);
+    await this.page.fill('input[data-qa="2444login-email"]', email);
     await this.page.fill('input[data-qa="login-password"]', password);
     await this.page.click('button[data-qa="login-button"]');
   }
 
   async verifyLoginSuccess() {
-    await this.page.locator('a[href="/logout1"]').waitFor({ state: 'visible' });
-    await expect(this.page.locator('a[href="/logout"]')).toBeVisible();
+    await this.page.locator('a[href="/logou1t"]').waitFor({ state: 'visible' });
+    await expect(this.page.locator('a[href="/logou1t"]')).toBeVisible();
   }
 
   async verifyLoginFailure() {
@@ -69,31 +69,23 @@ export class LoginPage {
 Feature: Login functionality
 Scenario: Invalid login
 
-Step: login should fail
+Step: user logs in with invalid credentials
 Step Definition File: tests/step-definitions/login.steps.ts
-Step Definition Line: 21
+Step Definition Line: 13
 
 Page Object File: /home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts
-Broken Locator: .login-form1 p
+Broken Locator: input[data-qa="2444login-email"]
 Classification: LOCATOR_NOT_FOUND
 
 ### Error Stack
 
 ```
-Error: expect(locator).toBeVisible() failed
-
-Locator: locator('.login-form1 p')
-Expected: visible
-Timeout: 5000ms
-Error: element(s) not found
-
+page.fill: Timeout 30000ms exceeded.
 Call log:
-  - Expect "to.be.visible" with timeout 5000ms
-  - waiting for locator('.login-form1 p')
+  - waiting for locator('input[data-qa="2444login-email"]')
 
-    at Proxy.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/node_modules/playwright/lib/matchers/expect.js:213:24)
-    at LoginPage.verifyLoginFailure (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:22:55)
-    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:22:24)
+    at LoginPage.login (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:11:21)
+    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:14:24)
 ```
 
 ### Current Page Object Code
@@ -109,14 +101,14 @@ export class LoginPage {
   }
 
   async login(email: string, password: string) {
-    await this.page.fill('input[data-qa="login-email"]', email);
+    await this.page.fill('input[data-qa="2444login-email"]', email);
     await this.page.fill('input[data-qa="login-password"]', password);
     await this.page.click('button[data-qa="login-button"]');
   }
 
   async verifyLoginSuccess() {
-    await this.page.locator('a[href="/logout1"]').waitFor({ state: 'visible' });
-    await expect(this.page.locator('a[href="/logout"]')).toBeVisible();
+    await this.page.locator('a[href="/logou1t"]').waitFor({ state: 'visible' });
+    await expect(this.page.locator('a[href="/logou1t"]')).toBeVisible();
   }
 
   async verifyLoginFailure() {
