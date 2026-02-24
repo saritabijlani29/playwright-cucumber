@@ -108,16 +108,17 @@ function extractPageObjectFile(error: string): string {
   return "";
 }
 
-function parseCucumberJson(): FailureInfo | null {
+function parseCucumberJson(): FailureInfo[] {
   const reportPath = "artifacts/cucumber-report.json";
 
   if (!fs.existsSync(reportPath)) {
     console.log("Cucumber report not found.");
-    return null;
+    return [];
   }
 
   const raw = fs.readFileSync(reportPath, "utf8");
   const features = JSON.parse(raw);
+  const failures: FailureInfo[] = [];
 
   for (const feature of features) {
     for (const scenario of feature.elements || []) {
@@ -128,9 +129,9 @@ function parseCucumberJson(): FailureInfo | null {
 
           if (!classification.healable) {
             console.log(
-              `Failure classified as ${classification.type}. Skipping healing.`
+              `Failure in "${step.name}" classified as ${classification.type}. Skipping.`
             );
-            return null;
+            continue;
           }
 
           const location = step.match?.location || "";
@@ -148,7 +149,7 @@ function parseCucumberJson(): FailureInfo | null {
             }
           }
 
-          return {
+          failures.push({
             feature: feature.name,
             scenario: scenario.name,
             step: step.name,
@@ -159,39 +160,45 @@ function parseCucumberJson(): FailureInfo | null {
             error,
             brokenLocator,
             classification: classification.type,
-          };
+          });
         }
       }
     }
   }
 
-  return null;
+  return failures;
 }
 
-export function generateContext(): FailureInfo | null {
-  const failure = parseCucumberJson();
+export function generateContext(): FailureInfo[] {
+  const failures = parseCucumberJson();
 
-  if (!failure) {
+  if (failures.length === 0) {
     console.log("No healable failure detected.");
-    return null;
+    return [];
   }
+
+  console.log(`Found ${failures.length} healable failure(s).`);
 
   const runId = process.env.GITHUB_RUN_ID || "LOCAL";
   const branch = process.env.GITHUB_REF_NAME || "LOCAL";
   const timestamp = new Date().toISOString();
 
-  const content = `
-# ENTERPRISE SELF-HEAL REPORT
+  // Build context for ALL failures
+  let content = `# ENTERPRISE SELF-HEAL REPORT
 
 ## Metadata
 - Branch: ${branch}
 - Run ID: ${runId}
 - Timestamp: ${timestamp}
-- Classification: ${failure.classification}
+- Total Failures: ${failures.length}
 
 ---
+`;
 
-## Failing Test
+  for (let i = 0; i < failures.length; i++) {
+    const failure = failures[i];
+    content += `
+## Failure ${i + 1} of ${failures.length}
 
 Feature: ${failure.feature}
 Scenario: ${failure.scenario}
@@ -202,56 +209,41 @@ Step Definition Line: ${failure.stepDefLine}
 
 Page Object File: ${failure.pageObjectFile}
 Broken Locator: ${failure.brokenLocator}
+Classification: ${failure.classification}
 
----
-
-## Error Stack
+### Error Stack
 
 \`\`\`
 ${failure.error}
 \`\`\`
 
----
-
-## Current Page Object Code
+### Current Page Object Code
 
 \`\`\`typescript
 ${failure.pageObjectContent}
 \`\`\`
 
 ---
+`;
+  }
 
+  content += `
 ## COPILOT INSTRUCTIONS
 
 You are fixing a Playwright + Cucumber (BDD) framework.
-
-This failure is classified as: ${failure.classification}
-The broken locator is: ${failure.brokenLocator}
-The page object file is: ${failure.pageObjectFile}
+There are ${failures.length} broken locator(s) to fix.
 
 STRICT RULES:
 
-1. ONLY update the locator in the Page Object file.
-2. DO NOT modify:
-   - .feature files
-   - step definition files
-   - hooks
-   - assertions logic
-   - business logic
-3. DO NOT introduce:
-   - XPath
-   - waitForTimeout
-   - hardcoded delays
-4. Preferred locator strategy order:
-   - getByRole()
-   - getByLabel()
-   - getByTestId()
-   - CSS locator() fallback
-5. Maintain existing method signature.
+1. ONLY update locators in Page Object files.
+2. DO NOT modify .feature files, step definitions, hooks, assertions, or business logic.
+3. DO NOT introduce XPath, waitForTimeout, or hardcoded delays.
+4. Preferred locator strategy: CSS selectors with class/attribute selectors.
+5. Maintain existing method signatures.
 6. If strict mode violation -> make locator more specific.
 7. If timeout or locator not found -> fix the CSS selector.
 
-Return ONLY the complete updated TypeScript file content for: ${failure.pageObjectFile}
+Return ONLY the complete updated TypeScript file content.
 Do NOT include any explanation, markdown formatting, or code fences.
 Return raw TypeScript code only.
 `;
@@ -261,23 +253,46 @@ Return raw TypeScript code only.
   fs.writeFileSync(outputPath, content.trim());
   console.log("heal-context.md generated successfully.");
 
-  // Also write structured JSON for the healer script
+  // Group failures by page object file (multiple locators in same file)
+  const groupedByFile: Record<string, { locators: string[]; errors: string[]; content: string }> = {};
+  for (const failure of failures) {
+    if (!failure.pageObjectFile) continue;
+    if (!groupedByFile[failure.pageObjectFile]) {
+      groupedByFile[failure.pageObjectFile] = {
+        locators: [],
+        errors: [],
+        content: failure.pageObjectContent,
+      };
+    }
+    groupedByFile[failure.pageObjectFile].locators.push(failure.brokenLocator);
+    groupedByFile[failure.pageObjectFile].errors.push(failure.error);
+  }
+
+  // Write structured JSON with ALL failures for the healer
   const healData = {
-    pageObjectFile: failure.pageObjectFile,
-    pageObjectContent: failure.pageObjectContent,
-    brokenLocator: failure.brokenLocator,
-    classification: failure.classification,
-    error: failure.error,
-    feature: failure.feature,
-    scenario: failure.scenario,
-    step: failure.step,
+    totalFailures: failures.length,
+    files: Object.entries(groupedByFile).map(([file, data]) => ({
+      pageObjectFile: file,
+      pageObjectContent: data.content,
+      brokenLocators: data.locators,
+      errors: data.errors,
+    })),
+    failures: failures.map((f) => ({
+      feature: f.feature,
+      scenario: f.scenario,
+      step: f.step,
+      pageObjectFile: f.pageObjectFile,
+      brokenLocator: f.brokenLocator,
+      classification: f.classification,
+      error: f.error,
+    })),
   };
 
   const jsonPath = path.resolve("artifacts/heal-data.json");
   fs.writeFileSync(jsonPath, JSON.stringify(healData, null, 2));
   console.log("heal-data.json generated successfully.");
 
-  return failure;
+  return failures;
 }
 
 // Run if executed directly

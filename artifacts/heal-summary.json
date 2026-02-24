@@ -1,7 +1,0 @@
-{
-  "healed": true,
-  "file": "/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts",
-  "brokenLocator": ".login-form1 p",
-  "classification": "LOCATOR_NOT_FOUND",
-  "timestamp": "2026-02-24T06:47:08.837Z"
-}
