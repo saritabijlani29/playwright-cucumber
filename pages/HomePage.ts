@@ -8,7 +8,7 @@ export class HomePage {
   }
 
   async addFirstProductToCart() {
-    await this.page.locator('.product-image-wrapper').first().hover();
+    await this.page.locator('.product').first().hover();
     await this.page.locator('//div[@class="overlay-content"]/a[text()="Add to cart"]').first().click();
   }
 
