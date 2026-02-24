@@ -1,0 +1,10 @@
+{
+  "pageObjectFile": "/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts",
+  "pageObjectContent": "import { expect, Page } from '@playwright/test';\n\nexport class LoginPage {\n  constructor(private page: Page) { }\n\n  async navigate() {\n    await this.page.goto('/login');\n  }\n\n  async login(email: string, password: string) {\n    await this.page.fill('input[data-qa=\"login-email\"]', email);\n    await this.page.fill('input[data-qa=\"login-password\"]', password);\n    await this.page.click('button[data-qa=\"login-button\"]');\n  }\n\n  async verifyLoginSuccess() {\n    await this.page.locator('a[href=\"/logout\"]').waitFor({ state: 'visible' });\n    await expect(this.page.locator('a[href=\"/logout\"]')).toBeVisible();\n  }\n\n  async verifyLoginFailure() {\n    await expect(this.page.locator('.login-form1 p')).toBeVisible();\n  }\n}",
+  "brokenLocator": ".login-form1 p",
+  "classification": "LOCATOR_NOT_FOUND",
+  "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.login-form1 p')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 5000ms\n  - waiting for locator('.login-form1 p')\n\n    at Proxy.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/node_modules/playwright/lib/matchers/expect.js:213:24)\n    at LoginPage.verifyLoginFailure (/home/runner/work/playwright-cucumber/playwright-cucumber/pages/LoginPage.ts:22:55)\n    at CustomWorld.<anonymous> (/home/runner/work/playwright-cucumber/playwright-cucumber/tests/step-definitions/login.steps.ts:22:24)",
+  "feature": "Login functionality",
+  "scenario": "Invalid login",
+  "step": "login should fail"
+}
