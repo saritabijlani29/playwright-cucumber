@@ -1,4 +1,6 @@
-import { Before, After, ITestCaseHookParameter } from '@cucumber/cucumber';
+import { Before, After, setDefaultTimeout, ITestCaseHookParameter } from '@cucumber/cucumber';
+
+setDefaultTimeout(60 * 1000); // 60 seconds - must be higher than Playwright's expect timeout
 
 Before(async function () {
   await this.init();

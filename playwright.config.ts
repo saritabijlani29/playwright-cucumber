@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   retries: 2,
-  timeout: 90000,
+  timeout: 50000,
   reporter: [
     ['list'],
     ['html'],
