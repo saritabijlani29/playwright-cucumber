@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
       - name: Run Production Heal Engine
         run: npx ts-node ai-observer/heal.ts
 
@@ -45,7 +48,7 @@ jobs:
         id: verify_tests
         if: steps.verify_change.outputs.changed == 'true'
         run: |
-          if npx cucumber-js; then
+          if npm test; then
             echo "tests_passed=true" >> $GITHUB_OUTPUT
           else
             echo "tests_passed=false" >> $GITHUB_OUTPUT
