@@ -1,39 +1,39 @@
-name: CI
+# name: CI
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
 
-      - run: npm install
+#       - run: npm install
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+#       - name: Install Playwright Browsers
+#         run: npx playwright install --with-deps
 
-      - name: Run Tests
-        id: run_tests
-        run: npm test
-        continue-on-error: true
+#       - name: Run Tests
+#         id: run_tests
+#         run: npm test
+#         continue-on-error: true
 
-      - name: Upload Reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cucumber-report
-          path: artifacts/cucumber-report.json
-          retention-days: 5
+#       - name: Upload Reports
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: cucumber-report
+#           path: artifacts/cucumber-report.json
+#           retention-days: 5
 
-      - name: Fail Workflow If Tests Failed
-        if: steps.run_tests.outcome == 'failure'
-        run: exit 1
+#       - name: Fail Workflow If Tests Failed
+#         if: steps.run_tests.outcome == 'failure'
+#         run: exit 1

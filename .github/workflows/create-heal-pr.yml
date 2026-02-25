@@ -1,140 +1,140 @@
-name: AI Healer
+# name: AI Healer
 
-on:
-  workflow_run:
-    workflows: ["CI"]
-    types:
-      - completed
+# on:
+#   workflow_run:
+#     workflows: ["CI"]
+#     types:
+#       - completed
 
-permissions:
-  contents: write
-  pull-requests: write      
+# permissions:
+#   contents: write
+#   pull-requests: write      
 
-jobs:
-  heal:
-    # Only run if CI failed AND it was NOT triggered by an ai-heal branch (prevents infinite loop)
-    if: >
-      github.event.workflow_run.conclusion == 'failure' &&
-      !startsWith(github.event.workflow_run.head_branch, 'ai-heal-') &&
-      !contains(github.event.workflow_run.head_commit.message, '[ai-heal]')
-    runs-on: ubuntu-latest
+# jobs:
+#   heal:
+#     # Only run if CI failed AND it was NOT triggered by an ai-heal branch (prevents infinite loop)
+#     if: >
+#       github.event.workflow_run.conclusion == 'failure' &&
+#       !startsWith(github.event.workflow_run.head_branch, 'ai-heal-') &&
+#       !contains(github.event.workflow_run.head_commit.message, '[ai-heal]')
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Log trigger info
-        run: |
-          echo "Triggered by workflow run: ${{ github.event.workflow_run.id }}"
-          echo "Branch: ${{ github.event.workflow_run.head_branch }}"
-          echo "Commit: ${{ github.event.workflow_run.head_sha }}"
+#     steps:
+#       - name: Log trigger info
+#         run: |
+#           echo "Triggered by workflow run: ${{ github.event.workflow_run.id }}"
+#           echo "Branch: ${{ github.event.workflow_run.head_branch }}"
+#           echo "Commit: ${{ github.event.workflow_run.head_sha }}"
 
-      - uses: actions/checkout@v4
+#       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+#       - name: Install Playwright Browsers
+#         run: npx playwright install --with-deps
 
-      - run: npm install
+#       - run: npm install
 
-      - name: Download cucumber report
-        uses: actions/download-artifact@v4
-        with:
-          name: cucumber-report
-          path: artifacts
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Download cucumber report
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: cucumber-report
+#           path: artifacts
+#           run-id: ${{ github.event.workflow_run.id }}
+#           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify report exists
-        run: |
-          echo "Checking for cucumber report..."
-          ls -la artifacts/
-          if [ ! -f artifacts/cucumber-report.json ]; then
-            echo "cucumber-report.json not found!"
-            exit 1
-          fi
+#       - name: Verify report exists
+#         run: |
+#           echo "Checking for cucumber report..."
+#           ls -la artifacts/
+#           if [ ! -f artifacts/cucumber-report.json ]; then
+#             echo "cucumber-report.json not found!"
+#             exit 1
+#           fi
 
-      - name: Run AI Observer - Generate Context
-        run: npx ts-node ai-observer/context-generator.ts
+#       - name: Run AI Observer - Generate Context
+#         run: npx ts-node ai-observer/context-generator.ts
 
-      - name: Check if heal data exists
-        id: check_heal
-        run: |
-          if [ -f artifacts/heal-data.json ]; then
-            echo "heal_needed=true" >> $GITHUB_OUTPUT
-            echo "Heal data found. Proceeding with Copilot healing..."
-            cat artifacts/heal-data.json
-          else
-            echo "heal_needed=false" >> $GITHUB_OUTPUT
-            echo "No healable failure detected. Skipping."
-          fi
+#       - name: Check if heal data exists
+#         id: check_heal
+#         run: |
+#           if [ -f artifacts/heal-data.json ]; then
+#             echo "heal_needed=true" >> $GITHUB_OUTPUT
+#             echo "Heal data found. Proceeding with Copilot healing..."
+#             cat artifacts/heal-data.json
+#           else
+#             echo "heal_needed=false" >> $GITHUB_OUTPUT
+#             echo "No healable failure detected. Skipping."
+#           fi
 
-      - name: Run Copilot Healer
-        if: steps.check_heal.outputs.heal_needed == 'true'
-        env:
-          GH_MODELS_TOKEN: ${{ secrets.GH_MODELS_TOKEN }}
-        run: npx ts-node ai-observer/copilot-healer.ts
+#       - name: Run Copilot Healer
+#         if: steps.check_heal.outputs.heal_needed == 'true'
+#         env:
+#           GH_MODELS_TOKEN: ${{ secrets.GH_MODELS_TOKEN }}
+#         run: npx ts-node ai-observer/copilot-healer.ts
 
-      - name: Verify file was changed
-        if: steps.check_heal.outputs.heal_needed == 'true'
-        id: verify_change
-        run: |
-          if git diff --quiet; then
-            echo "No changes detected. Healing may have failed."
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "Changes detected!"
-            git diff
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
+#       - name: Verify file was changed
+#         if: steps.check_heal.outputs.heal_needed == 'true'
+#         id: verify_change
+#         run: |
+#           if git diff --quiet; then
+#             echo "No changes detected. Healing may have failed."
+#             echo "changed=false" >> $GITHUB_OUTPUT
+#           else
+#             echo "Changes detected!"
+#             git diff
+#             echo "changed=true" >> $GITHUB_OUTPUT
+#           fi
 
-      - name: Run tests to verify fix
-        if: steps.verify_change.outputs.changed == 'true'
-        id: verify_tests
-        run: |
-          echo "Running tests to verify the heal worked..."
-          if npm test; then
-            echo "tests_passed=true" >> $GITHUB_OUTPUT
-            echo "✅ Tests passed after healing!"
-          else
-            echo "tests_passed=false" >> $GITHUB_OUTPUT
-            echo "❌ Tests still failing after heal attempt."
-          fi
-        continue-on-error: true
+#       - name: Run tests to verify fix
+#         if: steps.verify_change.outputs.changed == 'true'
+#         id: verify_tests
+#         run: |
+#           echo "Running tests to verify the heal worked..."
+#           if npm test; then
+#             echo "tests_passed=true" >> $GITHUB_OUTPUT
+#             echo "✅ Tests passed after healing!"
+#           else
+#             echo "tests_passed=false" >> $GITHUB_OUTPUT
+#             echo "❌ Tests still failing after heal attempt."
+#           fi
+#         continue-on-error: true
 
-      - name: Create Heal PR
-        if: steps.verify_change.outputs.changed == 'true' && steps.verify_tests.outputs.tests_passed == 'true'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GH_MODELS_TOKEN }}
-          branch: ai-heal-${{ github.event.workflow_run.id }}
-          title: "AI Locator Heal - ${{ github.event.workflow_run.id }}"
-          commit-message: "[ai-heal] Fixed broken locator(s)"
-          labels: ai-heal,auto-generated
-          body: |
-            ## AI Self-Heal Report
+#       - name: Create Heal PR
+#         if: steps.verify_change.outputs.changed == 'true' && steps.verify_tests.outputs.tests_passed == 'true'
+#         uses: peter-evans/create-pull-request@v6
+#         with:
+#           token: ${{ secrets.GH_MODELS_TOKEN }}
+#           branch: ai-heal-${{ github.event.workflow_run.id }}
+#           title: "AI Locator Heal - ${{ github.event.workflow_run.id }}"
+#           commit-message: "[ai-heal] Fixed broken locator(s)"
+#           labels: ai-heal,auto-generated
+#           body: |
+#             ## AI Self-Heal Report
 
-            This PR was automatically generated by the AI Healer pipeline.
+#             This PR was automatically generated by the AI Healer pipeline.
 
-            **Trigger**: CI workflow run #${{ github.event.workflow_run.id }} failed
-            **Source Branch**: `${{ github.event.workflow_run.head_branch }}`
-            **Action**: Broken locator(s) detected and fixed using GitHub Models API
+#             **Trigger**: CI workflow run #${{ github.event.workflow_run.id }} failed
+#             **Source Branch**: `${{ github.event.workflow_run.head_branch }}`
+#             **Action**: Broken locator(s) detected and fixed using GitHub Models API
 
-            ### What changed
-            - Fixed broken CSS selector/locator in Page Object file(s)
-            - No other code was modified
+#             ### What changed
+#             - Fixed broken CSS selector/locator in Page Object file(s)
+#             - No other code was modified
 
-            ### Validation
-            - ✅ Tests have been verified to pass after the fix
-            - This PR is safe to merge
+#             ### Validation
+#             - ✅ Tests have been verified to pass after the fix
+#             - This PR is safe to merge
 
-            ---
-            _Auto-generated by AI Healer_
+#             ---
+#             _Auto-generated by AI Healer_
 
-      - name: Log heal failure
-        if: steps.verify_change.outputs.changed == 'true' && steps.verify_tests.outputs.tests_passed != 'true'
-        run: |
-          echo "::warning::AI heal was attempted but tests still fail."
-          echo "Manual intervention required."
-          echo "Heal summary:"
-          cat artifacts/heal-summary.json || echo "No summary available"
+#       - name: Log heal failure
+#         if: steps.verify_change.outputs.changed == 'true' && steps.verify_tests.outputs.tests_passed != 'true'
+#         run: |
+#           echo "::warning::AI heal was attempted but tests still fail."
+#           echo "Manual intervention required."
+#           echo "Heal summary:"
+#           cat artifacts/heal-summary.json || echo "No summary available"
